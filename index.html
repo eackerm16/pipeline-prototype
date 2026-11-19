@@ -3,27 +3,29 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pipeline: recruiting copilot prototype</title>
+<title>Pipeline: recruiting copilot for career centres</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 :root{--bg:#f6f7f9;--card:#fff;--ink:#14171f;--muted:#667085;--line:#e4e7ec;--acc:#2f5bea;--acc2:#e8eefe;--red:#d92d20;--redbg:#fef3f2;--amb:#b54708;--ambbg:#fffaeb;--grn:#067647;--grnbg:#ecfdf3}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
-header{background:var(--ink);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header{background:var(--ink);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:5}
 .logo{font-weight:700;font-size:18px;letter-spacing:-.3px}.logo span{color:#8fa8ff}
 .tag{font-size:12px;color:#aab;margin-right:auto}
-.tabs{display:flex;gap:4px;background:#2a2f3b;padding:4px;border-radius:10px}
-.tabs button{background:none;border:0;color:#cfd4dc;padding:7px 14px;border-radius:7px;font:inherit;font-weight:500;cursor:pointer}
+.tabs{display:flex;gap:4px;background:#2a2f3b;padding:4px;border-radius:10px;flex-wrap:wrap}
+.tabs button{background:none;border:0;color:#cfd4dc;padding:7px 12px;border-radius:7px;font:inherit;font-weight:500;cursor:pointer}
 .tabs button.on{background:#fff;color:var(--ink)}
 main{max-width:1100px;margin:0 auto;padding:20px}
 .view{display:none}.view.on{display:block}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:800px){.grid{grid-template-columns:1fr}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.mt{margin-top:16px}
 h2{font-size:15px;margin:0 0 4px}.sub{color:var(--muted);font-size:13px;margin:0 0 14px}
 label{font-size:12px;font-weight:600;color:var(--muted);display:block;margin:10px 0 5px}
 textarea,select,input{width:100%;font:inherit;border:1px solid var(--line);border-radius:9px;padding:9px;background:#fff;color:var(--ink)}
 textarea{min-height:130px;resize:vertical}
-.btn{background:var(--acc);color:#fff;border:0;border-radius:9px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;margin-top:12px}
-.btn.ghost{background:var(--acc2);color:var(--acc)}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:9px;padding:9px 14px;font:inherit;font-weight:600;cursor:pointer;margin-top:12px}
+.btn.ghost{background:var(--acc2);color:var(--acc)}.btn.sm{padding:6px 10px;font-size:12px;margin:0}
 .score{display:flex;align-items:center;gap:16px;margin-bottom:12px}
 .ring{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:22px;flex:none}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}
@@ -33,48 +35,86 @@ ul{margin:4px 0 12px;padding-left:18px}li{margin:4px 0}
 .empty{color:var(--muted);text-align:center;padding:40px 10px}
 table{width:100%;border-collapse:collapse}th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);padding:8px;border-bottom:1px solid var(--line)}
 td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr.click{cursor:pointer}tr.click:hover{background:#f9fafb}
 td select{padding:5px;font-size:13px}
 .pill{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;white-space:nowrap}
-.r{background:var(--redbg);color:var(--red)}.a{background:var(--ambbg);color:var(--amb)}.g{background:var(--grnbg);color:var(--grn)}
+.r{background:var(--redbg);color:var(--red)}.a{background:var(--ambbg);color:var(--amb)}.g{background:var(--grnbg);color:var(--grn)}.n{background:#f2f4f7;color:#667085}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
-.stat .n{font-size:26px;font-weight:700}.stat .l{color:var(--muted);font-size:12px}
+.stat .n2{font-size:26px;font-weight:700}.stat .l{color:var(--muted);font-size:12px}
 .row{display:flex;gap:8px;align-items:end;flex-wrap:wrap}.row>div{flex:1;min-width:120px}
 .scroll{overflow-x:auto}
 .note{font-size:12px;color:var(--muted);margin-top:16px;text-align:center}
-.filters{display:flex;gap:6px;margin-bottom:10px}.filters button{border:1px solid var(--line);background:#fff;border-radius:99px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}.filters button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.filters{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}.filters button{border:1px solid var(--line);background:#fff;border-radius:99px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}.filters button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.post{display:flex;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.post:last-child{border:0}.logo2{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;font-weight:700;color:#fff;flex:none}
+.post .meta{flex:1;min-width:180px}.post .meta b{display:block}.post .meta span{color:var(--muted);font-size:13px}
+.new{font-size:11px;font-weight:700;color:var(--acc);background:var(--acc2);padding:2px 7px;border-radius:99px;margin-left:6px}
+.drop{border:1.5px dashed var(--line);border-radius:10px;padding:12px;text-align:center;color:var(--muted);font-size:13px;cursor:pointer;margin-top:6px}
+.drop:hover{border-color:var(--acc);color:var(--acc)}
+.drawer{position:fixed;inset:0;background:rgba(16,24,40,.4);display:none;z-index:10}.drawer.on{display:block}
+.panel{position:absolute;right:0;top:0;bottom:0;width:min(440px,100%);background:#fff;padding:22px;overflow:auto}
+.x{float:right;border:0;background:none;font-size:20px;cursor:pointer;color:var(--muted)}
+.bar{height:10px;border-radius:99px;background:#eef1f6;overflow:hidden}.bar i{display:block;height:100%;background:var(--acc);border-radius:99px}
+.funnel div{display:flex;align-items:center;gap:10px;margin:8px 0}.funnel span{width:110px;font-size:13px;color:var(--muted)}.funnel .bar{flex:1;height:22px}.funnel b{width:40px;text-align:right}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;opacity:0;transition:.2s;pointer-events:none;z-index:20}.toast.on{opacity:1}
+.hero{background:linear-gradient(135deg,#1d2b64,#2f5bea);color:#fff;border-radius:16px;padding:22px;margin-bottom:16px}
+.hero h1{margin:0 0 6px;font-size:22px;letter-spacing:-.3px}.hero p{margin:0;color:#d6defc;max-width:640px}
 </style>
 </head>
 <body>
 <header>
   <div class="logo">Pipe<span>line</span></div>
-  <div class="tag">AI recruiting copilot for business school career centres · prototype</div>
-  <div class="tabs"><button class="on" data-v="student">Student</button><button data-v="advisor">Advisor</button></div>
+  <div class="tag">AI recruiting copilot for business school career centres · v1 prototype</div>
+  <div class="tabs">
+    <button class="on" data-v="postings">Postings</button>
+    <button data-v="student">My recruiting</button>
+    <button data-v="advisor">Advisor</button>
+    <button data-v="director">Director</button>
+  </div>
 </header>
 <main>
-<section id="student" class="view on">
+
+<section id="postings" class="view on">
+  <div class="hero"><h1>Every CPG and consulting role, one feed.</h1><p>Pipeline watches employer career sites daily, flags new roles, and tells each student how well they fit before they apply.</p></div>
+  <div class="card">
+    <div class="filters" id="pf"><button class="on" data-f="all">All</button><button data-f="CPG">CPG</button><button data-f="Consulting">Consulting</button><button data-f="Sales">Sales</button></div>
+    <div id="feed"></div>
+  </div>
+</section>
+
+<section id="student" class="view">
   <div class="grid">
     <div class="card">
       <h2>Fit check</h2>
-      <p class="sub">Paste your resume, pick a posting, see how you stack up.</p>
-      <label>Posting (sample data)</label>
-      <select id="posting"></select>
+      <p class="sub">Upload or paste your resume, pick a role, see how you stack up.</p>
+      <label>Role</label><select id="posting"></select>
       <label>Your resume</label>
       <textarea id="resume" placeholder="Paste resume text here"></textarea>
+      <div class="drop" id="drop">Upload resume PDF<input type="file" id="pdf" accept="application/pdf" hidden></div>
       <button class="btn" id="run">Check fit</button>
       <button class="btn ghost" id="sample">Use sample resume</button>
     </div>
     <div class="card" id="result"><div class="empty">Run a fit check to see your score, gaps, and likely interview questions.</div></div>
   </div>
-  <div class="card" style="margin-top:16px">
+  <div class="card mt">
     <h2>My applications</h2>
-    <p class="sub">Track every role. Pipeline nudges you before deadlines.</p>
+    <p class="sub">Saved on this device. Add deadlines to your calendar in one tap.</p>
     <div class="row">
       <div><label>Company</label><input id="nc" placeholder="e.g. Unilever"></div>
       <div><label>Role</label><input id="nr" placeholder="e.g. Brand intern"></div>
       <div><label>Deadline</label><input id="nd" type="date"></div>
       <div style="flex:0"><button class="btn" id="add" style="margin:0">Add</button></div>
     </div>
-    <div class="scroll"><table style="margin-top:12px"><thead><tr><th>Company</th><th>Role</th><th>Deadline</th><th>Stage</th><th></th></tr></thead><tbody id="apps"></tbody></table></div>
+    <div class="scroll"><table class="mt"><thead><tr><th>Company</th><th>Role</th><th>Deadline</th><th>Stage</th><th></th></tr></thead><tbody id="apps"></tbody></table></div>
+    <button class="btn ghost" id="ics">Add all deadlines to calendar (.ics)</button>
+  </div>
+  <div class="card mt">
+    <h2>Interview drill</h2>
+    <p class="sub">Practice the questions you're most likely to get for the role selected above. Answer out loud, then check yourself against STAR.</p>
+    <div id="drill" style="font-size:16px;font-weight:600;min-height:48px"></div>
+    <div id="timer" class="sub" style="margin:6px 0 0"></div>
+    <button class="btn" id="next">Next question</button>
+    <ul class="sub" style="margin-top:12px"><li><b>Situation</b>: set it up in one sentence</li><li><b>Task</b>: what you owned</li><li><b>Action</b>: what you did, not the team</li><li><b>Result</b>: a number</li></ul>
   </div>
 </section>
 
@@ -82,39 +122,99 @@ td select{padding:5px;font-size:13px}
   <div class="stats" id="stats"></div>
   <div class="card">
     <h2>Cohort pipeline</h2>
-    <p class="sub">Every student's recruiting status in one view. Risk flags update as students log activity.</p>
-    <div class="filters"><button class="on" data-f="all">All</button><button data-f="risk">At risk</button><button data-f="track">On track</button></div>
+    <p class="sub">Tap a student to see their pipeline and suggested next step.</p>
+    <div class="filters" id="af"><button class="on" data-f="all">All</button><button data-f="risk">Needs attention</button><button data-f="track">On track</button></div>
     <div class="scroll"><table><thead><tr><th>Student</th><th>Target</th><th>Apps</th><th>Furthest stage</th><th>Next deadline</th><th>Status</th></tr></thead><tbody id="cohort"></tbody></table></div>
+    <button class="btn ghost" id="csv">Export cohort CSV</button>
   </div>
 </section>
-<p class="note">Prototype with sample data. Fit scoring here is keyword based; the production version uses an LLM fit engine and live postings.</p>
+
+<section id="director" class="view">
+  <div class="stats" id="dstats"></div>
+  <div class="grid">
+    <div class="card"><h2>Recruiting funnel</h2><p class="sub">Collected automatically as students update their pipelines. No grad surveys.</p><div class="funnel" id="funnel"></div></div>
+    <div class="card"><h2>Interviews by employer</h2><p class="sub">Where your students are getting traction this cycle.</p><div id="emp"></div></div>
+  </div>
+  <div class="card mt"><h2>Placement by target industry</h2><p class="sub">Students with at least one offer, by what they recruited for.</p><div id="ind"></div></div>
+</section>
+
+<p class="note">Prototype with sample data. Fit scoring is keyword based; production uses an LLM fit engine, live postings from employer sites, and school SSO.</p>
 </main>
+
+<div class="drawer" id="drawer"><div class="panel" id="panel"></div></div>
+<div class="toast" id="toast"></div>
+
 <script>
+const $=id=>document.getElementById(id);
 const STAGES=["Interested","Applied","First round","Second round","Offer","Rejected"];
 const day=864e5,today=new Date();today.setHours(0,0,0,0);
 const inDays=n=>new Date(today.getTime()+n*day).toISOString().slice(0,10);
+const toast=m=>{const t=$("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1800)};
+const store={get(k,d){try{const v=localStorage.getItem("pl_"+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem("pl_"+k,JSON.stringify(v))}catch(e){}}};
+function download(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove()}
+
 const POSTINGS=[
- {id:"pg",co:"P&G",role:"Brand Management Intern",kw:["brand","consumer","marketing","data","analytics","leadership","project","campaign","sales","p&l","forecast","insight","cross-functional","strategy","excel"],
+ {id:"pg",co:"P&G",role:"Brand Management Intern",ind:"CPG",c:"#003da5",dl:12,isNew:true,loc:"Toronto",kw:["brand","consumer","marketing","data","analytics","leadership","project","campaign","sales","forecast","insight","cross-functional","strategy","excel"],
   q:["Tell me about a time you led a team to a result nobody expected.","Walk me through how you would grow share for a mature brand.","Describe a decision you made with incomplete data.","How would you use consumer insights to fix a struggling launch?","Why brand management over consulting?"]},
- {id:"mck",co:"McKinsey",role:"Business Analyst",kw:["analysis","problem","structured","consulting","case","excel","strategy","client","leadership","research","model","impact","team","presentation","data"],
-  q:["Walk me through a time you had personal impact on a team.","Case: a Canadian grocer's margins fell 3 points. Why?","Tell me about a time you persuaded someone senior.","How would you size the market for EV chargers in Ontario?","Describe a time you worked through ambiguity."]},
- {id:"lor",co:"L'Oréal",role:"Marketing Intern",kw:["beauty","marketing","social","digital","brand","consumer","trend","content","campaign","creative","analytics","influencer","launch","retail","insight"],
+ {id:"uni",co:"Unilever",role:"Future Leaders Intern, Marketing",ind:"CPG",c:"#1f36c7",dl:5,isNew:true,loc:"Toronto",kw:["brand","purpose","sustainability","consumer","marketing","digital","leadership","insight","campaign","data","team","growth"],
+  q:["Tell me about a time you made something more sustainable.","Which Unilever brand would you fix and how?","Describe a time you influenced without authority.","How do you balance purpose and profit for a brand?","Tell me about a failure and what changed after."]},
+ {id:"lor",co:"L'Oréal",role:"Marketing Intern",ind:"CPG",c:"#111",dl:20,isNew:false,loc:"Montréal",kw:["beauty","marketing","social","digital","brand","consumer","trend","content","campaign","creative","analytics","influencer","launch","retail","insight"],
   q:["Which beauty brand is winning on social right now and why?","Pitch a launch for a new skincare line to Gen Z.","Tell me about a creative project you drove end to end.","How would you measure an influencer campaign?","What trend will reshape beauty retail in five years?"]},
- {id:"pep",co:"PepsiCo",role:"Sales Associate",kw:["sales","customer","account","negotiation","retail","category","data","growth","relationship","target","forecast","excel","presentation","promotion","b2b"],
+ {id:"kh",co:"Kraft Heinz",role:"Associate Brand Manager Intern",ind:"CPG",c:"#c8102e",dl:9,isNew:false,loc:"Toronto",kw:["brand","p&l","forecast","consumer","marketing","analytics","ownership","excel","sales","insight","pricing","cost"],
+  q:["Tell me about a time you owned a number.","How would you respond to a private label competitor taking share?","Walk me through a pricing decision you'd make for ketchup.","Describe a time you cut cost without hurting quality.","Why Kraft Heinz?"]},
+ {id:"mck",co:"McKinsey",role:"Business Analyst",ind:"Consulting",c:"#051c2c",dl:15,isNew:true,loc:"Toronto",kw:["analysis","problem","structured","consulting","case","excel","strategy","client","leadership","research","model","impact","team","presentation","data"],
+  q:["Walk me through a time you had personal impact on a team.","Case: a Canadian grocer's margins fell 3 points. Why?","Tell me about a time you persuaded someone senior.","How would you size the market for EV chargers in Ontario?","Describe a time you worked through ambiguity."]},
+ {id:"bcg",co:"BCG",role:"Associate",ind:"Consulting",c:"#1a7f4b",dl:24,isNew:false,loc:"Toronto",kw:["analysis","strategy","client","case","problem","data","insight","team","leadership","research","model","presentation"],
+  q:["Why consulting, and why BCG?","Case: should a bank launch a buy-now-pay-later product?","Tell me about your most analytical project.","Describe a time you disagreed with your team.","How would you estimate coffee cups sold in Toronto daily?"]},
+ {id:"pep",co:"PepsiCo",role:"Sales Associate",ind:"Sales",c:"#004b93",dl:3,isNew:false,loc:"Mississauga",kw:["sales","customer","account","negotiation","retail","category","data","growth","relationship","target","forecast","excel","presentation","promotion","b2b"],
   q:["Tell me about a time you closed something difficult.","How would you convince a retailer to give us more shelf space?","Describe a time you missed a target and what you did next.","Walk me through how you would read a category scan report.","Why sales as a career starting point?"]}];
-const SAMPLE=`Ethan, HBA candidate, Ivey Business School
+POSTINGS.forEach(p=>p.d=inDays(p.dl));
+const SAMPLE=`HBA candidate, Ivey Business School
 Brand Management Intern, P&G Canada: supported a consumer insights project for a deodorant brand, built Excel forecast models, worked cross-functional with sales and R&D on a campaign launch.
 B2B Marketing Intern, Siemens: ran digital campaign analytics and produced presentation decks for regional sales leadership.
-President, Western Crypto & Blockchain Club: led a team of 12, grew membership through events and social content.
+President, campus club: led a team of 12, grew membership through events and social content.
 Finance & Economics Instructor: taught grade 6-9 students.`;
-const sel=document.getElementById("posting");
-POSTINGS.forEach(p=>sel.add(new Option(p.co+" · "+p.role,p.id)));
-document.getElementById("sample").onclick=()=>{document.getElementById("resume").value=SAMPLE};
-document.getElementById("run").onclick=()=>{
- const txt=document.getElementById("resume").value.toLowerCase(),p=POSTINGS.find(x=>x.id===sel.value),R=document.getElementById("result");
- if(txt.trim().length<30){R.innerHTML='<div class="empty">Paste a bit more of your resume first.</div>';return}
- const hit=p.kw.filter(k=>txt.includes(k)),miss=p.kw.filter(k=>!txt.includes(k));
- const s=Math.round(35+65*hit.length/p.kw.length),c=s>=75?"var(--grn)":s>=55?"var(--amb)":"var(--red)",bg=s>=75?"var(--grnbg)":s>=55?"var(--ambbg)":"var(--redbg)";
+
+let apps=store.get("apps",[{co:"P&G",role:"Brand Management Intern",d:inDays(12),s:1},{co:"Unilever",role:"Future Leaders Intern, Marketing",d:inDays(5),s:0},{co:"Kraft Heinz",role:"Associate Brand Manager Intern",d:inDays(9),s:2}]);
+const saveApps=()=>store.set("apps",apps);
+
+function fit(txt,p){txt=txt.toLowerCase();const hit=p.kw.filter(k=>txt.includes(k)),miss=p.kw.filter(k=>!txt.includes(k));return{hit,miss,s:Math.round(35+65*hit.length/p.kw.length)}}
+const col=s=>s>=75?["var(--grn)","var(--grnbg)","g"]:s>=55?["var(--amb)","var(--ambbg)","a"]:["var(--red)","var(--redbg)","r"];
+
+// postings feed
+let pfilt="all";
+function renderFeed(){
+ const res=$("resume").value||store.get("resume","");
+ $("feed").innerHTML=POSTINGS.filter(p=>pfilt==="all"||p.ind===pfilt).map(p=>{
+  const f=res.trim().length>30?fit(res,p):null,tracked=apps.some(a=>a.co===p.co&&a.role===p.role);
+  return `<div class="post"><div class="logo2" style="background:${p.c}">${p.co[0]}</div>
+  <div class="meta"><b>${p.role}${p.isNew?'<span class="new">NEW</span>':''}</b><span>${p.co} · ${p.loc} · ${p.ind}</span></div>
+  ${f?`<span class="pill ${col(f.s)[2]}">${f.s}% fit</span>`:'<span class="pill n">Add resume for fit</span>'}
+  ${due(p.d)}
+  <button class="btn sm ghost" data-fit="${p.id}">Check fit</button>
+  <button class="btn sm" data-track="${p.id}" ${tracked?"disabled style='opacity:.5'":""}>${tracked?"Tracking":"Track"}</button></div>`}).join("");
+}
+$("feed").onclick=e=>{const t=e.target;
+ if(t.dataset.track){const p=POSTINGS.find(x=>x.id===t.dataset.track);apps.unshift({co:p.co,role:p.role,d:p.d,s:0});saveApps();renderApps();renderFeed();toast("Added to your tracker")}
+ if(t.dataset.fit){$("posting").value=t.dataset.fit;go("student");if(($("resume").value||"").trim().length>30)runFit();else toast("Add your resume, then hit Check fit")}};
+$("pf").onclick=e=>{if(!e.target.dataset.f)return;[...$("pf").children].forEach(b=>b.classList.toggle("on",b===e.target));pfilt=e.target.dataset.f;renderFeed()};
+
+// fit check
+POSTINGS.forEach(p=>$("posting").add(new Option(p.co+" · "+p.role,p.id)));
+$("resume").value=store.get("resume","");
+$("resume").oninput=()=>store.set("resume",$("resume").value);
+$("sample").onclick=()=>{$("resume").value=SAMPLE;store.set("resume",SAMPLE);toast("Sample resume loaded")};
+$("drop").onclick=()=>$("pdf").click();
+$("pdf").onchange=async e=>{const f=e.target.files[0];if(!f)return;
+ if(!window.pdfjsLib){toast("PDF reader didn't load, paste text instead");return}
+ try{pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  const doc=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;let out="";
+  for(let i=1;i<=doc.numPages;i++){const pg=await doc.getPage(i);out+=(await pg.getTextContent()).items.map(x=>x.str).join(" ")+"\n"}
+  $("resume").value=out.trim();store.set("resume",out.trim());$("drop").firstChild.textContent="Loaded "+f.name;toast("Resume read from PDF")}catch(err){toast("Couldn't read that PDF")}};
+function runFit(){
+ const txt=$("resume").value,p=POSTINGS.find(x=>x.id===$("posting").value),R=$("result");
+ if(txt.trim().length<30){R.innerHTML='<div class="empty">Paste or upload a bit more of your resume first.</div>';return}
+ const{hit,miss,s}=fit(txt,p),[c,bg]=col(s);
  const verdict=s>=75?"Strong fit. Apply and prep for interviews.":s>=55?"Competitive with tweaks. Close the gaps below.":"Stretch role. Rework your resume before applying.";
  const fixes=miss.slice(0,3).map(k=>`Add a bullet that shows <b>${k}</b> with a number attached (scope, result, or time saved).`);
  R.innerHTML=`<div class="score"><div class="ring" style="background:${bg};color:${c}">${s}</div><div><h2>${p.co} · ${p.role}</h2><div class="sub" style="margin:0">${verdict}</div></div></div>
@@ -122,26 +222,67 @@ document.getElementById("run").onclick=()=>{
  <label>Gaps</label><div class="chips">${miss.map(k=>`<span class="chip miss">${k}</span>`).join("")||'<span class="sub">None</span>'}</div>
  <label>Top fixes</label><ul>${fixes.join("")||"<li>You're covered. Focus on interview prep.</li>"}</ul>
  <label>Likely interview questions</label><ul>${p.q.map(q=>`<li>${q}</li>`).join("")}</ul>`;
-};
-let apps=[{co:"P&G",role:"Brand Management Intern",d:inDays(9),s:1},{co:"Unilever",role:"Future Leaders Intern",d:inDays(2),s:0},{co:"Kraft Heinz",role:"Marketing Intern",d:inDays(16),s:2},{co:"Bain",role:"Associate Consultant Intern",d:inDays(-3),s:5}];
-function due(d){const n=Math.round((new Date(d)-today)/day);return n<0?'<span class="pill" style="background:#f2f4f7;color:#667085">Closed</span>':n<=3?`<span class="pill r">${n}d left</span>`:n<=10?`<span class="pill a">${n}d left</span>`:`<span class="pill g">${n}d left</span>`}
-function renderApps(){document.getElementById("apps").innerHTML=apps.map((a,i)=>`<tr><td><b>${a.co}</b></td><td>${a.role}</td><td>${due(a.d)}</td><td><select data-i="${i}">${STAGES.map((s,j)=>`<option ${j===a.s?"selected":""} value="${j}">${s}</option>`).join("")}</select></td><td><button data-x="${i}" style="border:0;background:none;color:#98a2b3;cursor:pointer">✕</button></td></tr>`).join("")}
-document.getElementById("apps").onchange=e=>{if(e.target.dataset.i){apps[e.target.dataset.i].s=+e.target.value}};
-document.getElementById("apps").onclick=e=>{if(e.target.dataset.x){apps.splice(e.target.dataset.x,1);renderApps()}};
-document.getElementById("add").onclick=()=>{const c=nc.value.trim(),r=nr.value.trim(),d=nd.value||inDays(14);if(!c||!r)return;apps.unshift({co:c,role:r,d,s:0});nc.value=nr.value=nd.value="";renderApps()};
-renderApps();
-const COHORT=[["Ava Chen","CPG brand",7,3,4],["Marcus Lee","Consulting",2,1,2],["Priya Shah","CPG brand",9,2,6],["Daniel Okafor","Sales",0,0,3],["Sofia Rossi","Consulting",11,3,12],["Liam Park","CPG brand",4,2,1],["Noah Martin","Consulting",6,2,9],["Zara Ahmed","CPG brand",1,1,2],["Ethan W.","CPG brand",8,4,null],["Maya Singh","Sales",5,1,5],["Owen Clarke","Consulting",3,2,20],["Chloe Tremblay","CPG brand",0,0,8]];
-function risk(r){const[,,apps,st,dl]=r;if(apps===0&&dl!==null&&dl<=10)return["At risk","r","No applications, deadline soon"];if(apps<=2&&st<=1)return["Watch","a","Low activity"];if(st===4)return["Offer","g","Secured an offer"];return["On track","g",""]}
-let filt="all";
-function renderCohort(){
- const rows=COHORT.map(r=>({r,k:risk(r)}));
- const atRisk=rows.filter(x=>x.k[1]!=="g").length,offers=rows.filter(x=>x.r[3]===4).length,totalApps=COHORT.reduce((s,r)=>s+r[2],0),rounds=COHORT.filter(r=>r[3]>=2).length;
- document.getElementById("stats").innerHTML=[[COHORT.length,"Students"],[totalApps,"Applications logged"],[Math.round(100*rounds/COHORT.length)+"%","Reached interviews"],[atRisk,"Need attention"]].map(([n,l],i)=>`<div class="card stat"><div class="n" style="${i===3?'color:var(--red)':''}">${n}</div><div class="l">${l}</div></div>`).join("");
- document.getElementById("cohort").innerHTML=rows.filter(x=>filt==="all"||(filt==="risk"?x.k[1]!=="g":x.k[1]==="g")).map(({r,k})=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td><td>${STAGES[r[3]]}</td><td>${r[4]===null?"—":r[4]+" days"}</td><td><span class="pill ${k[1]}" title="${k[2]}">${k[0]}</span></td></tr>`).join("");
+ renderFeed();drillReset();
 }
-document.querySelectorAll(".filters button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".filters button").forEach(x=>x.classList.remove("on"));b.classList.add("on");filt=b.dataset.f;renderCohort()});
-renderCohort();
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("on"));b.classList.add("on");document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id===b.dataset.v))});
+$("run").onclick=runFit;
+
+// tracker
+function due(d){const n=Math.round((new Date(d+"T00:00")-today)/day);return n<0?'<span class="pill n">Closed</span>':n<=3?`<span class="pill r">${n}d left</span>`:n<=10?`<span class="pill a">${n}d left</span>`:`<span class="pill g">${n}d left</span>`}
+function renderApps(){$("apps").innerHTML=apps.length?apps.map((a,i)=>`<tr><td><b>${a.co}</b></td><td>${a.role}</td><td>${due(a.d)}</td><td><select data-i="${i}">${STAGES.map((s,j)=>`<option ${j===a.s?"selected":""} value="${j}">${s}</option>`).join("")}</select></td><td><button data-x="${i}" style="border:0;background:none;color:#98a2b3;cursor:pointer">✕</button></td></tr>`).join(""):'<tr><td colspan="5" class="empty">No applications yet. Track roles from the Postings tab.</td></tr>'}
+$("apps").onchange=e=>{if(e.target.dataset.i){apps[e.target.dataset.i].s=+e.target.value;saveApps();toast("Stage updated")}};
+$("apps").onclick=e=>{if(e.target.dataset.x){apps.splice(e.target.dataset.x,1);saveApps();renderApps();renderFeed()}};
+$("add").onclick=()=>{const c=$("nc").value.trim(),r=$("nr").value.trim(),d=$("nd").value||inDays(14);if(!c||!r){toast("Add a company and role");return}apps.unshift({co:c,role:r,d,s:0});$("nc").value=$("nr").value=$("nd").value="";saveApps();renderApps();toast("Added")};
+$("ics").onclick=()=>{const open=apps.filter(a=>new Date(a.d+"T00:00")>=today);if(!open.length){toast("No upcoming deadlines");return}
+ const ev=open.map((a,i)=>{const d=a.d.replace(/-/g,"");return["BEGIN:VEVENT","UID:pipeline-"+i+"-"+d+"@pipeline","DTSTAMP:"+new Date().toISOString().replace(/[-:]/g,"").slice(0,15)+"Z","DTSTART;VALUE=DATE:"+d,"SUMMARY:Deadline: "+a.co+" "+a.role,"BEGIN:VALARM","TRIGGER:-P3D","ACTION:DISPLAY","DESCRIPTION:3 days to apply","END:VALARM","BEGIN:VALARM","TRIGGER:-P1D","ACTION:DISPLAY","DESCRIPTION:1 day to apply","END:VALARM","END:VEVENT"].join("\r\n")}).join("\r\n");
+ download("pipeline-deadlines.ics","BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Pipeline//EN\r\n"+ev+"\r\nEND:VCALENDAR","text/calendar");toast("Calendar file ready, with 3-day and 1-day reminders")};
+
+// drill
+let qi=0,tick=null;
+function drillReset(){qi=0;showQ()}
+function showQ(){const p=POSTINGS.find(x=>x.id===$("posting").value);$("drill").textContent=p.q[qi%p.q.length];clearInterval(tick);let t=90;$("timer").textContent="90s to answer";tick=setInterval(()=>{t--;$("timer").textContent=t>0?t+"s to answer":"Time. Did you land the result with a number?";if(t<=0)clearInterval(tick)},1000)}
+$("next").onclick=()=>{qi++;showQ()};
+$("posting").onchange=drillReset;
+
+// advisor
+const COHORT=[["Ava Chen","CPG brand",7,3,4,["P&G","Unilever","L'Oréal"]],["Marcus Lee","Consulting",2,1,2,["McKinsey"]],["Priya Shah","CPG brand",9,2,6,["Kraft Heinz","P&G"]],["Daniel Okafor","Sales",0,0,3,[]],["Sofia Rossi","Consulting",11,3,12,["BCG","McKinsey"]],["Liam Park","CPG brand",4,2,1,["Unilever"]],["Noah Martin","Consulting",6,2,9,["BCG"]],["Zara Ahmed","CPG brand",1,1,2,[]],["Jordan Wu","CPG brand",8,4,null,["P&G","Kraft Heinz"]],["Maya Singh","Sales",5,4,5,["PepsiCo"]],["Owen Clarke","Consulting",3,2,20,["McKinsey"]],["Chloe Tremblay","CPG brand",0,0,8,[]],["Arjun Mehta","Consulting",9,4,null,["McKinsey","BCG"]],["Hannah Brooks","CPG brand",6,2,7,["L'Oréal","Unilever"]]];
+function risk(r){const[,,a,st,dl]=r;if(st===4)return["Offer","g","Secured an offer. Help them evaluate it and close out other processes."];if(a===0&&dl!==null&&dl<=10)return["At risk","r","No applications with a deadline inside 10 days. Book a 15-minute check-in this week."];if(a<=2&&st<=1)return["Watch","a","Low activity. Send three roles that match their target and a nudge."];if(st===2&&a>=6)return["Watch","a","Lots of first rounds, no second rounds yet. Book a mock interview."];return["On track","g","Keep going. No action needed."]}
+let afilt="all";
+function renderCohort(){
+ const rows=COHORT.map((r,i)=>({r,i,k:risk(r)}));
+ const need=rows.filter(x=>x.k[1]!=="g").length,total=COHORT.reduce((s,r)=>s+r[2],0),inter=COHORT.filter(r=>r[3]>=2).length;
+ $("stats").innerHTML=[[COHORT.length,"Students"],[total,"Applications logged"],[Math.round(100*inter/COHORT.length)+"%","Reached interviews"],[need,"Need attention"]].map(([n,l],i)=>`<div class="card stat"><div class="n2" style="${i===3?'color:var(--red)':''}">${n}</div><div class="l">${l}</div></div>`).join("");
+ $("cohort").innerHTML=rows.filter(x=>afilt==="all"||(afilt==="risk"?x.k[1]!=="g":x.k[1]==="g")).map(({r,i,k})=>`<tr class="click" data-s="${i}"><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td><td>${STAGES[r[3]]}</td><td>${r[4]===null?"None":r[4]+" days"}</td><td><span class="pill ${k[1]}">${k[0]}</span></td></tr>`).join("");
+}
+$("af").onclick=e=>{if(!e.target.dataset.f)return;[...$("af").children].forEach(b=>b.classList.toggle("on",b===e.target));afilt=e.target.dataset.f;renderCohort()};
+$("cohort").onclick=e=>{const tr=e.target.closest("tr");if(!tr)return;const r=COHORT[tr.dataset.s],k=risk(r);
+ $("panel").innerHTML=`<button class="x" id="cx">×</button><h2 style="font-size:18px">${r[0]}</h2><p class="sub">${r[1]} · ${r[2]} applications</p>
+ <span class="pill ${k[1]}">${k[0]}</span>
+ <label style="margin-top:18px">Suggested next step</label><p style="margin:0">${k[2]}</p>
+ <label style="margin-top:18px">Stage progress</label><div class="bar"><i style="width:${Math.min(r[3],4)*25}%"></i></div><p class="sub" style="margin-top:6px">${STAGES[r[3]]}</p>
+ <label>Interviewing with</label><div class="chips">${r[5].length?r[5].map(c=>`<span class="chip">${c}</span>`).join(""):'<span class="sub">No interviews yet</span>'}</div>
+ <label>Next deadline</label><p style="margin:0">${r[4]===null?"None upcoming":"In "+r[4]+" days"}</p>
+ <button class="btn" id="nudge">Send nudge</button>`;
+ $("drawer").classList.add("on");$("cx").onclick=()=>$("drawer").classList.remove("on");$("nudge").onclick=()=>{toast("Demo only: nudge queued for "+r[0].split(" ")[0])}};
+$("drawer").onclick=e=>{if(e.target.id==="drawer")$("drawer").classList.remove("on")};
+$("csv").onclick=()=>{const h="Student,Target,Applications,Furthest stage,Next deadline (days),Status,Interviewing with\n";
+ download("pipeline-cohort.csv",h+COHORT.map(r=>[r[0],r[1],r[2],STAGES[r[3]],r[4]??"",risk(r)[0],'"'+r[5].join("; ")+'"'].join(",")).join("\n"),"text/csv");toast("Cohort CSV exported")};
+
+// director
+function renderDirector(){
+ const n=COHORT.length,applied=COHORT.filter(r=>r[2]>0).length,fr=COHORT.filter(r=>r[3]>=2).length,sr=COHORT.filter(r=>r[3]>=3).length,of=COHORT.filter(r=>r[3]===4).length;
+ $("dstats").innerHTML=[[Math.round(100*of/n)+"%","Offer rate so far"],[COHORT.reduce((s,r)=>s+r[2],0),"Applications tracked"],[Math.round(100*sr/Math.max(fr,1))+"%","First to second round"],["0","Grad surveys needed"]].map(([v,l])=>`<div class="card stat"><div class="n2">${v}</div><div class="l">${l}</div></div>`).join("");
+ $("funnel").innerHTML=[["Students",n],["Applied",applied],["First round",fr],["Second round",sr],["Offer",of]].map(([l,v])=>`<div><span>${l}</span><div class="bar"><i style="width:${100*v/n}%"></i></div><b>${v}</b></div>`).join("");
+ const emp={};COHORT.forEach(r=>r[5].forEach(c=>emp[c]=(emp[c]||0)+1));const mx=Math.max(...Object.values(emp));
+ $("emp").innerHTML=Object.entries(emp).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`<div style="display:flex;align-items:center;gap:10px;margin:8px 0"><span style="width:90px;font-size:13px">${c}</span><div class="bar" style="flex:1"><i style="width:${100*v/mx}%"></i></div><b style="width:24px;text-align:right">${v}</b></div>`).join("");
+ const ind={};COHORT.forEach(r=>{ind[r[1]]=ind[r[1]]||[0,0];ind[r[1]][0]++;if(r[3]===4)ind[r[1]][1]++});
+ $("ind").innerHTML='<table><thead><tr><th>Target</th><th>Students</th><th>With offer</th><th>Offer rate</th></tr></thead><tbody>'+Object.entries(ind).map(([k,[t,o]])=>`<tr><td><b>${k}</b></td><td>${t}</td><td>${o}</td><td>${Math.round(100*o/t)}%</td></tr>`).join("")+'</tbody></table>';
+}
+
+// nav
+function go(v){document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x.dataset.v===v));document.querySelectorAll(".view").forEach(x=>x.classList.toggle("on",x.id===v));try{history.replaceState(null,"","#"+v)}catch(e){}window.scrollTo(0,0)}
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>go(b.dataset.v));
+renderApps();renderFeed();renderCohort();renderDirector();drillReset();
+if(["postings","student","advisor","director"].includes(location.hash.slice(1)))go(location.hash.slice(1));
 </script>
 </body>
 </html>
