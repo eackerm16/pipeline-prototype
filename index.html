@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pipeline: recruiting copilot prototype</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#14171f;--muted:#667085;--line:#e4e7ec;--acc:#2f5bea;--acc2:#e8eefe;--red:#d92d20;--redbg:#fef3f2;--amb:#b54708;--ambbg:#fffaeb;--grn:#067647;--grnbg:#ecfdf3}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+header{background:var(--ink);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.logo{font-weight:700;font-size:18px;letter-spacing:-.3px}.logo span{color:#8fa8ff}
+.tag{font-size:12px;color:#aab;margin-right:auto}
+.tabs{display:flex;gap:4px;background:#2a2f3b;padding:4px;border-radius:10px}
+.tabs button{background:none;border:0;color:#cfd4dc;padding:7px 14px;border-radius:7px;font:inherit;font-weight:500;cursor:pointer}
+.tabs button.on{background:#fff;color:var(--ink)}
+main{max-width:1100px;margin:0 auto;padding:20px}
+.view{display:none}.view.on{display:block}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:800px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+h2{font-size:15px;margin:0 0 4px}.sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+label{font-size:12px;font-weight:600;color:var(--muted);display:block;margin:10px 0 5px}
+textarea,select,input{width:100%;font:inherit;border:1px solid var(--line);border-radius:9px;padding:9px;background:#fff;color:var(--ink)}
+textarea{min-height:130px;resize:vertical}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:9px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;margin-top:12px}
+.btn.ghost{background:var(--acc2);color:var(--acc)}
+.score{display:flex;align-items:center;gap:16px;margin-bottom:12px}
+.ring{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:22px;flex:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}
+.chip{font-size:12px;padding:3px 9px;border-radius:99px;background:var(--grnbg);color:var(--grn)}
+.chip.miss{background:var(--redbg);color:var(--red)}
+ul{margin:4px 0 12px;padding-left:18px}li{margin:4px 0}
+.empty{color:var(--muted);text-align:center;padding:40px 10px}
+table{width:100%;border-collapse:collapse}th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);padding:8px;border-bottom:1px solid var(--line)}
+td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+td select{padding:5px;font-size:13px}
+.pill{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.r{background:var(--redbg);color:var(--red)}.a{background:var(--ambbg);color:var(--amb)}.g{background:var(--grnbg);color:var(--grn)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat .n{font-size:26px;font-weight:700}.stat .l{color:var(--muted);font-size:12px}
+.row{display:flex;gap:8px;align-items:end;flex-wrap:wrap}.row>div{flex:1;min-width:120px}
+.scroll{overflow-x:auto}
+.note{font-size:12px;color:var(--muted);margin-top:16px;text-align:center}
+.filters{display:flex;gap:6px;margin-bottom:10px}.filters button{border:1px solid var(--line);background:#fff;border-radius:99px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}.filters button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Pipe<span>line</span></div>
+  <div class="tag">AI recruiting copilot for business school career centres · prototype</div>
+  <div class="tabs"><button class="on" data-v="student">Student</button><button data-v="advisor">Advisor</button></div>
+</header>
+<main>
+<section id="student" class="view on">
+  <div class="grid">
+    <div class="card">
+      <h2>Fit check</h2>
+      <p class="sub">Paste your resume, pick a posting, see how you stack up.</p>
+      <label>Posting (sample data)</label>
+      <select id="posting"></select>
+      <label>Your resume</label>
+      <textarea id="resume" placeholder="Paste resume text here"></textarea>
+      <button class="btn" id="run">Check fit</button>
+      <button class="btn ghost" id="sample">Use sample resume</button>
+    </div>
+    <div class="card" id="result"><div class="empty">Run a fit check to see your score, gaps, and likely interview questions.</div></div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h2>My applications</h2>
+    <p class="sub">Track every role. Pipeline nudges you before deadlines.</p>
+    <div class="row">
+      <div><label>Company</label><input id="nc" placeholder="e.g. Unilever"></div>
+      <div><label>Role</label><input id="nr" placeholder="e.g. Brand intern"></div>
+      <div><label>Deadline</label><input id="nd" type="date"></div>
+      <div style="flex:0"><button class="btn" id="add" style="margin:0">Add</button></div>
+    </div>
+    <div class="scroll"><table style="margin-top:12px"><thead><tr><th>Company</th><th>Role</th><th>Deadline</th><th>Stage</th><th></th></tr></thead><tbody id="apps"></tbody></table></div>
+  </div>
+</section>
+
+<section id="advisor" class="view">
+  <div class="stats" id="stats"></div>
+  <div class="card">
+    <h2>Cohort pipeline</h2>
+    <p class="sub">Every student's recruiting status in one view. Risk flags update as students log activity.</p>
+    <div class="filters"><button class="on" data-f="all">All</button><button data-f="risk">At risk</button><button data-f="track">On track</button></div>
+    <div class="scroll"><table><thead><tr><th>Student</th><th>Target</th><th>Apps</th><th>Furthest stage</th><th>Next deadline</th><th>Status</th></tr></thead><tbody id="cohort"></tbody></table></div>
+  </div>
+</section>
+<p class="note">Prototype with sample data. Fit scoring here is keyword based; the production version uses an LLM fit engine and live postings.</p>
+</main>
+<script>
+const STAGES=["Interested","Applied","First round","Second round","Offer","Rejected"];
+const day=864e5,today=new Date();today.setHours(0,0,0,0);
+const inDays=n=>new Date(today.getTime()+n*day).toISOString().slice(0,10);
+const POSTINGS=[
+ {id:"pg",co:"P&G",role:"Brand Management Intern",kw:["brand","consumer","marketing","data","analytics","leadership","project","campaign","sales","p&l","forecast","insight","cross-functional","strategy","excel"],
+  q:["Tell me about a time you led a team to a result nobody expected.","Walk me through how you would grow share for a mature brand.","Describe a decision you made with incomplete data.","How would you use consumer insights to fix a struggling launch?","Why brand management over consulting?"]},
+ {id:"mck",co:"McKinsey",role:"Business Analyst",kw:["analysis","problem","structured","consulting","case","excel","strategy","client","leadership","research","model","impact","team","presentation","data"],
+  q:["Walk me through a time you had personal impact on a team.","Case: a Canadian grocer's margins fell 3 points. Why?","Tell me about a time you persuaded someone senior.","How would you size the market for EV chargers in Ontario?","Describe a time you worked through ambiguity."]},
+ {id:"lor",co:"L'Oréal",role:"Marketing Intern",kw:["beauty","marketing","social","digital","brand","consumer","trend","content","campaign","creative","analytics","influencer","launch","retail","insight"],
+  q:["Which beauty brand is winning on social right now and why?","Pitch a launch for a new skincare line to Gen Z.","Tell me about a creative project you drove end to end.","How would you measure an influencer campaign?","What trend will reshape beauty retail in five years?"]},
+ {id:"pep",co:"PepsiCo",role:"Sales Associate",kw:["sales","customer","account","negotiation","retail","category","data","growth","relationship","target","forecast","excel","presentation","promotion","b2b"],
+  q:["Tell me about a time you closed something difficult.","How would you convince a retailer to give us more shelf space?","Describe a time you missed a target and what you did next.","Walk me through how you would read a category scan report.","Why sales as a career starting point?"]}];
+const SAMPLE=`Ethan, HBA candidate, Ivey Business School
+Brand Management Intern, P&G Canada: supported a consumer insights project for a deodorant brand, built Excel forecast models, worked cross-functional with sales and R&D on a campaign launch.
+B2B Marketing Intern, Siemens: ran digital campaign analytics and produced presentation decks for regional sales leadership.
+President, Western Crypto & Blockchain Club: led a team of 12, grew membership through events and social content.
+Finance & Economics Instructor: taught grade 6-9 students.`;
+const sel=document.getElementById("posting");
+POSTINGS.forEach(p=>sel.add(new Option(p.co+" · "+p.role,p.id)));
+document.getElementById("sample").onclick=()=>{document.getElementById("resume").value=SAMPLE};
+document.getElementById("run").onclick=()=>{
+ const txt=document.getElementById("resume").value.toLowerCase(),p=POSTINGS.find(x=>x.id===sel.value),R=document.getElementById("result");
+ if(txt.trim().length<30){R.innerHTML='<div class="empty">Paste a bit more of your resume first.</div>';return}
+ const hit=p.kw.filter(k=>txt.includes(k)),miss=p.kw.filter(k=>!txt.includes(k));
+ const s=Math.round(35+65*hit.length/p.kw.length),c=s>=75?"var(--grn)":s>=55?"var(--amb)":"var(--red)",bg=s>=75?"var(--grnbg)":s>=55?"var(--ambbg)":"var(--redbg)";
+ const verdict=s>=75?"Strong fit. Apply and prep for interviews.":s>=55?"Competitive with tweaks. Close the gaps below.":"Stretch role. Rework your resume before applying.";
+ const fixes=miss.slice(0,3).map(k=>`Add a bullet that shows <b>${k}</b> with a number attached (scope, result, or time saved).`);
+ R.innerHTML=`<div class="score"><div class="ring" style="background:${bg};color:${c}">${s}</div><div><h2>${p.co} · ${p.role}</h2><div class="sub" style="margin:0">${verdict}</div></div></div>
+ <label>What matches</label><div class="chips">${hit.map(k=>`<span class="chip">${k}</span>`).join("")||'<span class="sub">Nothing yet</span>'}</div>
+ <label>Gaps</label><div class="chips">${miss.map(k=>`<span class="chip miss">${k}</span>`).join("")||'<span class="sub">None</span>'}</div>
+ <label>Top fixes</label><ul>${fixes.join("")||"<li>You're covered. Focus on interview prep.</li>"}</ul>
+ <label>Likely interview questions</label><ul>${p.q.map(q=>`<li>${q}</li>`).join("")}</ul>`;
+};
+let apps=[{co:"P&G",role:"Brand Management Intern",d:inDays(9),s:1},{co:"Unilever",role:"Future Leaders Intern",d:inDays(2),s:0},{co:"Kraft Heinz",role:"Marketing Intern",d:inDays(16),s:2},{co:"Bain",role:"Associate Consultant Intern",d:inDays(-3),s:5}];
+function due(d){const n=Math.round((new Date(d)-today)/day);return n<0?'<span class="pill" style="background:#f2f4f7;color:#667085">Closed</span>':n<=3?`<span class="pill r">${n}d left</span>`:n<=10?`<span class="pill a">${n}d left</span>`:`<span class="pill g">${n}d left</span>`}
+function renderApps(){document.getElementById("apps").innerHTML=apps.map((a,i)=>`<tr><td><b>${a.co}</b></td><td>${a.role}</td><td>${due(a.d)}</td><td><select data-i="${i}">${STAGES.map((s,j)=>`<option ${j===a.s?"selected":""} value="${j}">${s}</option>`).join("")}</select></td><td><button data-x="${i}" style="border:0;background:none;color:#98a2b3;cursor:pointer">✕</button></td></tr>`).join("")}
+document.getElementById("apps").onchange=e=>{if(e.target.dataset.i){apps[e.target.dataset.i].s=+e.target.value}};
+document.getElementById("apps").onclick=e=>{if(e.target.dataset.x){apps.splice(e.target.dataset.x,1);renderApps()}};
+document.getElementById("add").onclick=()=>{const c=nc.value.trim(),r=nr.value.trim(),d=nd.value||inDays(14);if(!c||!r)return;apps.unshift({co:c,role:r,d,s:0});nc.value=nr.value=nd.value="";renderApps()};
+renderApps();
+const COHORT=[["Ava Chen","CPG brand",7,3,4],["Marcus Lee","Consulting",2,1,2],["Priya Shah","CPG brand",9,2,6],["Daniel Okafor","Sales",0,0,3],["Sofia Rossi","Consulting",11,3,12],["Liam Park","CPG brand",4,2,1],["Noah Martin","Consulting",6,2,9],["Zara Ahmed","CPG brand",1,1,2],["Ethan W.","CPG brand",8,4,null],["Maya Singh","Sales",5,1,5],["Owen Clarke","Consulting",3,2,20],["Chloe Tremblay","CPG brand",0,0,8]];
+function risk(r){const[,,apps,st,dl]=r;if(apps===0&&dl!==null&&dl<=10)return["At risk","r","No applications, deadline soon"];if(apps<=2&&st<=1)return["Watch","a","Low activity"];if(st===4)return["Offer","g","Secured an offer"];return["On track","g",""]}
+let filt="all";
+function renderCohort(){
+ const rows=COHORT.map(r=>({r,k:risk(r)}));
+ const atRisk=rows.filter(x=>x.k[1]!=="g").length,offers=rows.filter(x=>x.r[3]===4).length,totalApps=COHORT.reduce((s,r)=>s+r[2],0),rounds=COHORT.filter(r=>r[3]>=2).length;
+ document.getElementById("stats").innerHTML=[[COHORT.length,"Students"],[totalApps,"Applications logged"],[Math.round(100*rounds/COHORT.length)+"%","Reached interviews"],[atRisk,"Need attention"]].map(([n,l],i)=>`<div class="card stat"><div class="n" style="${i===3?'color:var(--red)':''}">${n}</div><div class="l">${l}</div></div>`).join("");
+ document.getElementById("cohort").innerHTML=rows.filter(x=>filt==="all"||(filt==="risk"?x.k[1]!=="g":x.k[1]==="g")).map(({r,k})=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td><td>${STAGES[r[3]]}</td><td>${r[4]===null?"—":r[4]+" days"}</td><td><span class="pill ${k[1]}" title="${k[2]}">${k[0]}</span></td></tr>`).join("");
+}
+document.querySelectorAll(".filters button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".filters button").forEach(x=>x.classList.remove("on"));b.classList.add("on");filt=b.dataset.f;renderCohort()});
+renderCohort();
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("on"));b.classList.add("on");document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id===b.dataset.v))});
+</script>
+</body>
+</html>
